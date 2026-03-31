@@ -1,16 +1,20 @@
-// Enemy.h (UPDATED TO USE MODEL)
+// Enemy.h
+
 #pragma once
 #include <glm/glm.hpp>
 #include "Model.h"
+#include "Texture.h"
 
 class Enemy
 {
 public:
-    Model model;
-    glm::vec3 position;
-    bool isHit;
+    Model* model;
+    Texture* texture;
 
-    void setup();
-    void draw(unsigned int shaderProgram, unsigned int modelLoc, unsigned int colorLoc);
+    glm::vec3 position;
+    bool isActive;
+
+    void setup(Model* m, Texture* t);
+    void draw(unsigned int shaderProgram, unsigned int modelLoc, unsigned int useTextureLoc);
     bool checkHit(glm::vec3 rayOrigin, glm::vec3 rayDir);
 };

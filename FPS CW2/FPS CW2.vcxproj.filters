@@ -9,24 +9,11 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="GLAD">
       <UniqueIdentifier>{e4a04165-6431-4e08-8306-dc6b7f92b0ed}</UniqueIdentifier>
     </Filter>
     <Filter Include="GLFW">
       <UniqueIdentifier>{d0898ae5-cd9b-46c8-96dc-a9d11030e042}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GLM">
-      <UniqueIdentifier>{c6cc4566-660d-41f8-8975-26d75b3ceaee}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="STB">
-      <UniqueIdentifier>{61db0ccf-d90a-4d6d-82e7-cd34d5641339}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Assimp">
-      <UniqueIdentifier>{55dae19e-df4c-4d90-9cfb-dbb60e7ef285}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{ca25d970-72b9-4c3b-8c11-bc2dd40a53a3}</UniqueIdentifier>
@@ -46,9 +33,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Enemy.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Environment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Crosshair.cpp">
@@ -75,9 +59,6 @@
     <ClCompile Include="stb_image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Gun.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\..\VS ext Libraries\glfw-3.4.bin.WIN64\glfw-3.4.bin.WIN64\include\GLFW\glfw3.h">
@@ -99,9 +80,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Enemy.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Environment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Crosshair.h">
@@ -126,9 +104,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stb_image.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Gun.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

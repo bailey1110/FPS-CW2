@@ -1,3 +1,5 @@
+// BulletTracer.cpp
+
 #include "BulletTracer.h"
 #include <glad/glad.h>
 
@@ -83,16 +85,13 @@ void BulletTracer::update(float dt)
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(verts), verts);
 }
 
-void BulletTracer::draw(unsigned int shaderProgram)
+void BulletTracer::draw(int colorLoc)
 {
     if (!active) return;
 
-    glUseProgram(shaderProgram);
-
-    int colorLoc = glGetUniformLocation(shaderProgram, "objectColor");
     glUniform3f(colorLoc, 1.0f, 1.0f, 1.0f);
 
-    glLineWidth(6.0f);   // ← was 3.0f
+    glLineWidth(6.0f);
     glBindVertexArray(VAO);
     glDrawArrays(GL_LINES, 0, 2);
     glLineWidth(1.0f);

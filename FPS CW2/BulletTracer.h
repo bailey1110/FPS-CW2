@@ -1,3 +1,5 @@
+// BulletTracer.h
+
 #pragma once
 #include <glm/glm.hpp>
 
@@ -23,5 +25,5 @@ public:
     void setup();
     void spawn(glm::vec3 s, glm::vec3 e, float travelTime, float stayTime);
     void update(float deltaTime);
-    void draw(unsigned int shaderProgram);
+    void draw(int colorLoc);
 };

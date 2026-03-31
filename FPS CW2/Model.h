@@ -1,6 +1,8 @@
-// Model.h
 #pragma once
+
 #include <vector>
+#include <string>
+#include <cstddef>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
@@ -13,14 +15,17 @@ struct Vertex
 class Model
 {
 public:
-    unsigned int VAO, VBO;
+    unsigned int VAO;
+    unsigned int VBO;
     std::vector<Vertex> vertices;
 
     Model();
 
     void loadSimpleCube();
     void loadPlane();
+    void loadCylinder(int segments = 20);
+    bool loadOBJ(const std::string& path);
+
     void setupMesh();
     void draw();
-    void loadCylinder(int segments = 20);
 };

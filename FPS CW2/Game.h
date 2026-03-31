@@ -1,4 +1,5 @@
 // Game.h
+
 #pragma once
 
 #include <glad/glad.h>
@@ -7,12 +8,12 @@
 
 #include "Player.h"
 #include "Enemy.h"
-#include "Environment.h"
 #include "Crosshair.h"
 #include "BulletTracer.h"
 #include "ReloadUI.h"
 #include "Shader.h"
-#include "Gun.h"
+#include "Model.h"
+#include "Texture.h"
 
 class Game
 {
@@ -21,14 +22,27 @@ public:
 
     Player player;
     Enemy enemy;
-    Environment environment;
     Crosshair crosshair;
     BulletTracer tracer;
     ReloadUI reloadUI;
-    Gun gun;
+
+    Model importedFloorModel;
+    Model importedCrateModel;
+    Model importedGunModel;
+
+    Texture importedFloorTexture;
+    Texture importedCrateTexture;
+    Texture importedGunTexture;
 
     unsigned int shaderProgram;
     unsigned int crosshairShaderProgram;
+
+    GLint modelLoc;
+    GLint viewLoc;
+    GLint projectionLoc;
+    GLint textureLoc;
+    GLint useTextureLoc;
+    GLint objectColorLoc;
 
     glm::mat4 projection;
 
@@ -43,7 +57,7 @@ public:
 private:
     void initSystems();
     void gameLoop();
-    void processInput();
+    void processInput(float deltaTime);
     void updateGame(float deltaTime);
     void drawGame();
 

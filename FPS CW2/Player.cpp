@@ -1,4 +1,4 @@
-// Player.cpp (FULL - quarter speed)
+// Player.cpp
 
 #include "Player.h"
 
@@ -14,13 +14,13 @@ Player::Player()
     lastY = 540.0f;
     firstMouse = true;
 
-    speed = 1.25f; // quarter of original 5.0
+    speed = 4.0f; // 20% slower than 5.0
     sensitivity = 0.1f;
 }
 
-void Player::processInput(GLFWwindow* window)
+void Player::processInput(GLFWwindow* window, float deltaTime)
 {
-    float velocity = speed * 0.016f;
+    float velocity = speed * deltaTime;
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);

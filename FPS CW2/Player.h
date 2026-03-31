@@ -1,4 +1,5 @@
 // Player.h
+
 #pragma once
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -22,7 +23,7 @@ public:
 
     Player();
 
-    void processInput(GLFWwindow* window);
+    void processInput(GLFWwindow* window, float deltaTime);
     void mouseLook(double xpos, double ypos);
     glm::mat4 getViewMatrix() const;
 };

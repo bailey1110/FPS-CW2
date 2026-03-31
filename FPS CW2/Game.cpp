@@ -1,3 +1,5 @@
+// Game.cpp
+
 #include "Game.h"
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -31,14 +33,28 @@ void Game::initSystems()
     shaderProgram = createShaderProgram("vertexShader.glsl", "fragmentShader.glsl");
     crosshairShaderProgram = createShaderProgram("crosshairVertex.glsl", "crosshairFragment.glsl");
 
+    modelLoc = glGetUniformLocation(shaderProgram, "model");
+    viewLoc = glGetUniformLocation(shaderProgram, "view");
+    projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+    textureLoc = glGetUniformLocation(shaderProgram, "texture1");
+    useTextureLoc = glGetUniformLocation(shaderProgram, "useTexture");
+    objectColorLoc = glGetUniformLocation(shaderProgram, "objectColor");
+
     projection = glm::perspective(glm::radians(45.0f), 1920.0f / 1080.0f, 0.1f, 100.0f);
 
-    enemy.setup();
-    environment.setup();
     crosshair.setup();
     tracer.setup();
     reloadUI.setup();
-    gun.setup();
+
+    importedFloorModel.loadOBJ("Models/Floor.obj");
+    importedCrateModel.loadOBJ("Models/crate obj.obj");
+    importedGunModel.loadOBJ("Models/gun.obj");
+
+    importedFloorTexture.load("Models/floor-diffuse-texture.png");
+    importedCrateTexture.load("Models/crate_texture.png");
+    importedGunTexture.load("Models/gun_texture.png");
+
+    enemy.setup(&importedCrateModel, &importedCrateTexture);
 
     lastTime = 0.0f;
     reloadTimer = 0.0f;
@@ -49,11 +65,11 @@ void Game::gameLoop()
 {
     while (!glfwWindowShouldClose(window))
     {
-        float currentTime = glfwGetTime();
+        float currentTime = static_cast<float>(glfwGetTime());
         float deltaTime = currentTime - lastTime;
         lastTime = currentTime;
 
-        processInput();
+        processInput(deltaTime);
         updateGame(deltaTime);
         drawGame();
 
@@ -62,12 +78,12 @@ void Game::gameLoop()
     }
 }
 
-void Game::processInput()
+void Game::processInput(float deltaTime)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    player.processInput(window);
+    player.processInput(window, deltaTime);
 
     bool mousePressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
 
@@ -77,26 +93,21 @@ void Game::processInput()
         glm::vec3 right = glm::normalize(glm::cross(dir, player.up));
         glm::vec3 camUp = glm::normalize(glm::cross(right, dir));
 
-        // same start as gun
         glm::vec3 gunBase =
             player.position
             - dir * 0.5f
             + right * 0.2f
             - camUp * 0.2f;
 
-        // end of barrel
         glm::vec3 muzzle = gunBase + dir * 2.0f;
 
-        // where player is aiming from center of screen at click time
         glm::vec3 aimPoint = player.position + dir * 50.0f;
 
         if (enemy.checkHit(player.position, dir))
         {
-            enemy.isHit = true;
             aimPoint = enemy.position;
         }
 
-        // fire from barrel end TOWARDS crosshair aim point
         tracer.spawn(muzzle, aimPoint, 0.15f, 1.0f);
 
         reloadTimer = reloadDuration;
@@ -128,33 +139,49 @@ void Game::drawGame()
 
     glUseProgram(shaderProgram);
 
-    unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
-    unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
-    unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-    unsigned int textureLoc = glGetUniformLocation(shaderProgram, "texture1");
-    unsigned int colorLoc = glGetUniformLocation(shaderProgram, "objectColor");
-    unsigned int useTextureLoc = glGetUniformLocation(shaderProgram, "useTexture");
-
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
     glUniform1i(textureLoc, 0);
 
-    glUniform1i(useTextureLoc, 0);
-    glUniform3f(colorLoc, 1.0f, 0.0f, 0.0f);
-    enemy.draw(shaderProgram, modelLoc, colorLoc);
+    glUniform1i(useTextureLoc, 1);
+
+    glm::mat4 floorModelMat = glm::mat4(1.0f);
+    floorModelMat = glm::scale(floorModelMat, glm::vec3(0.25f));
+    importedFloorTexture.bind(0);
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &floorModelMat[0][0]);
+    importedFloorModel.draw();
+
+    enemy.draw(shaderProgram, modelLoc, useTextureLoc);
+
+    glm::vec3 dir = glm::normalize(player.front);
+    glm::vec3 right = glm::normalize(glm::cross(dir, player.up));
+    glm::vec3 camUp = glm::normalize(glm::cross(right, dir));
+
+    glm::vec3 gunPos =
+        player.position
+        - dir * 0.5f
+        + right * 0.2f
+        - camUp * 0.2f
+        + dir * 1.25f;
+
+    glm::mat4 gunRotation = glm::mat4(1.0f);
+    gunRotation[0] = glm::vec4(right, 0.0f);
+    gunRotation[1] = glm::vec4(camUp, 0.0f);
+    gunRotation[2] = glm::vec4(dir, 0.0f);
+
+    glm::mat4 gunViewModel = glm::translate(glm::mat4(1.0f), gunPos) * gunRotation;
+    gunViewModel = glm::scale(gunViewModel, glm::vec3(0.05f));
 
     glUniform1i(useTextureLoc, 1);
-    environment.draw(modelLoc);
-
-    glUniform1i(useTextureLoc, 0);
-    glUniform3f(colorLoc, 0.2f, 0.2f, 0.2f);
-    gun.draw(modelLoc, player.position, player.front, player.up);
+    importedGunTexture.bind(0);
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &gunViewModel[0][0]);
+    importedGunModel.draw();
 
     glm::mat4 tracerModel = glm::mat4(1.0f);
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &tracerModel[0][0]);
 
     glDisable(GL_DEPTH_TEST);
-    tracer.draw(shaderProgram);
+    tracer.draw(objectColorLoc);
     glEnable(GL_DEPTH_TEST);
 
     crosshair.draw(crosshairShaderProgram);
