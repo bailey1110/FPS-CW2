@@ -2,6 +2,7 @@
 
 #include "Game.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include <cstdlib>
 
 void Game::run()
 {
@@ -19,6 +20,8 @@ void Game::initSystems()
 
     window = glfwCreateWindow(1920, 1080, "FPS CW2", NULL, NULL);
     glfwMakeContextCurrent(window);
+
+    glfwSwapInterval(1);
 
     glfwSetWindowUserPointer(window, this);
 
@@ -45,6 +48,7 @@ void Game::initSystems()
     crosshair.setup();
     tracer.setup();
     reloadUI.setup();
+    compass.setup();
 
     importedFloorModel.loadOBJ("Models/Floor.obj");
     importedCrateModel.loadOBJ("Models/crate obj.obj");
@@ -128,6 +132,16 @@ void Game::updateGame(float deltaTime)
 
     float reloadProgress = 1.0f - (reloadTimer / reloadDuration);
     reloadUI.update(reloadProgress);
+
+    if (!enemy.isActive)
+    {
+        enemy.position = glm::vec3(
+            (rand() % 5) - 2,
+            0.0f,
+            -(rand() % 10 + 3)
+        );
+        enemy.isActive = true;
+    }
 }
 
 void Game::drawGame()
@@ -143,16 +157,43 @@ void Game::drawGame()
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
     glUniform1i(textureLoc, 0);
 
+    glm::vec3 lightDirection = glm::normalize(glm::vec3(-0.5f, -1.0f, -0.3f));
+
+    glUniform3f(glGetUniformLocation(shaderProgram, "lightDir"),
+        lightDirection.x, lightDirection.y, lightDirection.z);
+
+    glUniform3f(glGetUniformLocation(shaderProgram, "viewPos"),
+        player.position.x, player.position.y, player.position.z);
+
+    drawFloor();
+    drawEnemy();
+    drawGun();
+    drawTracer();
+
+    compass.draw(crosshairShaderProgram, player.position, player.front, enemy.position);
+
+    drawUI();
+}
+
+void Game::drawFloor()
+{
     glUniform1i(useTextureLoc, 1);
 
     glm::mat4 floorModelMat = glm::mat4(1.0f);
     floorModelMat = glm::scale(floorModelMat, glm::vec3(0.25f));
+
     importedFloorTexture.bind(0);
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &floorModelMat[0][0]);
     importedFloorModel.draw();
+}
 
+void Game::drawEnemy()
+{
     enemy.draw(shaderProgram, modelLoc, useTextureLoc);
+}
 
+void Game::drawGun()
+{
     glm::vec3 dir = glm::normalize(player.front);
     glm::vec3 right = glm::normalize(glm::cross(dir, player.up));
     glm::vec3 camUp = glm::normalize(glm::cross(right, dir));
@@ -169,21 +210,36 @@ void Game::drawGame()
     gunRotation[1] = glm::vec4(camUp, 0.0f);
     gunRotation[2] = glm::vec4(dir, 0.0f);
 
-    glm::mat4 gunViewModel = glm::translate(glm::mat4(1.0f), gunPos) * gunRotation;
-    gunViewModel = glm::scale(gunViewModel, glm::vec3(0.05f));
+    glm::mat4 gunModelMat = glm::translate(glm::mat4(1.0f), gunPos) * gunRotation;
+    gunModelMat = glm::scale(gunModelMat, glm::vec3(0.05f));
+
+    // FLAT LIGHTING FOR GUN
+    glUniform3f(glGetUniformLocation(shaderProgram, "lightDir"), 0.0f, -1.0f, 0.0f);
 
     glUniform1i(useTextureLoc, 1);
     importedGunTexture.bind(0);
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &gunViewModel[0][0]);
+
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &gunModelMat[0][0]);
     importedGunModel.draw();
 
+    // RESTORE LIGHT
+    glm::vec3 lightDirection = glm::normalize(glm::vec3(-0.5f, -1.0f, -0.3f));
+    glUniform3f(glGetUniformLocation(shaderProgram, "lightDir"),
+        lightDirection.x, lightDirection.y, lightDirection.z);
+}
+
+void Game::drawTracer()
+{
     glm::mat4 tracerModel = glm::mat4(1.0f);
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &tracerModel[0][0]);
 
     glDisable(GL_DEPTH_TEST);
     tracer.draw(objectColorLoc);
     glEnable(GL_DEPTH_TEST);
+}
 
+void Game::drawUI()
+{
     crosshair.draw(crosshairShaderProgram);
     reloadUI.draw(crosshairShaderProgram);
 }

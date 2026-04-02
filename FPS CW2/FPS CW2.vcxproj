@@ -135,6 +135,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\..\VS ext Libraries\glad\src\glad.c" />
     <ClCompile Include="BulletTracer.cpp" />
+    <ClCompile Include="Compass.cpp" />
     <ClCompile Include="Crosshair.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -153,6 +154,7 @@
     <ClInclude Include="..\..\..\..\..\..\VS ext Libraries\glfw-3.4.bin.WIN64\glfw-3.4.bin.WIN64\include\GLFW\glfw3.h" />
     <ClInclude Include="..\..\..\..\..\..\VS ext Libraries\glfw-3.4.bin.WIN64\glfw-3.4.bin.WIN64\include\GLFW\glfw3native.h" />
     <ClInclude Include="BulletTracer.h" />
+    <ClInclude Include="Compass.h" />
     <ClInclude Include="Crosshair.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="Game.h" />

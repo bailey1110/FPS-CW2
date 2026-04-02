@@ -1,4 +1,4 @@
-// Game.h
+// Game.h (MAKE SURE ONLY THIS EXISTS — NO GLOBAL Compass ANYWHERE)
 
 #pragma once
 
@@ -14,6 +14,7 @@
 #include "Shader.h"
 #include "Model.h"
 #include "Texture.h"
+#include "Compass.h"
 
 class Game
 {
@@ -25,6 +26,7 @@ public:
     Crosshair crosshair;
     BulletTracer tracer;
     ReloadUI reloadUI;
+    Compass compass; // ONLY instance
 
     Model importedFloorModel;
     Model importedCrateModel;
@@ -60,6 +62,12 @@ private:
     void processInput(float deltaTime);
     void updateGame(float deltaTime);
     void drawGame();
+
+    void drawFloor();
+    void drawEnemy();
+    void drawGun();
+    void drawTracer();
+    void drawUI();
 
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
     static void mouse_callback(GLFWwindow* window, double xpos, double ypos);

@@ -10,6 +10,8 @@ void Enemy::setup(Model* m, Texture* t)
 
     position = glm::vec3(0.0f, 0.0f, -5.0f);
     isActive = true;
+
+    radius = 0.75f;
 }
 
 void Enemy::draw(unsigned int shaderProgram, unsigned int modelLoc, unsigned int useTextureLoc)
@@ -30,15 +32,17 @@ bool Enemy::checkHit(glm::vec3 rayOrigin, glm::vec3 rayDir)
 {
     if (!isActive) return false;
 
-    float t = (position.z - rayOrigin.z) / rayDir.z;
-    glm::vec3 hitPoint = rayOrigin + rayDir * t;
+    glm::vec3 oc = rayOrigin - position;
 
-    bool hit =
-        (hitPoint.x > position.x - 0.5f && hitPoint.x < position.x + 0.5f &&
-            hitPoint.y > position.y - 0.5f && hitPoint.y < position.y + 0.5f);
+    float a = glm::dot(rayDir, rayDir);
+    float b = 2.0f * glm::dot(oc, rayDir);
+    float c = glm::dot(oc, oc) - radius * radius;
 
-    if (hit)
-        isActive = false;
+    float discriminant = b * b - 4 * a * c;
 
-    return hit;
+    if (discriminant < 0.0f)
+        return false;
+
+    isActive = false;
+    return true;
 }
