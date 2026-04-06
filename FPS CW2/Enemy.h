@@ -1,5 +1,3 @@
-// Enemy.h
-
 #pragma once
 #include <glm/glm.hpp>
 #include "Model.h"

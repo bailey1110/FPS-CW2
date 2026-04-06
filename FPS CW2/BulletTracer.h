@@ -1,5 +1,3 @@
-// BulletTracer.h
-
 #pragma once
 #include <glm/glm.hpp>
 
@@ -19,6 +17,12 @@ public:
 
     unsigned int VAO;
     unsigned int VBO;
+
+    // FLASH
+    bool flashActive;
+    float flashTimer;
+    float flashDuration;
+    float flashSize;
 
     BulletTracer();
 

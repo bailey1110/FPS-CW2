@@ -1,5 +1,3 @@
-// Game.h (MAKE SURE ONLY THIS EXISTS — NO GLOBAL Compass ANYWHERE)
-
 #pragma once
 
 #include <glad/glad.h>
@@ -26,7 +24,7 @@ public:
     Crosshair crosshair;
     BulletTracer tracer;
     ReloadUI reloadUI;
-    Compass compass; // ONLY instance
+    Compass compass;
 
     Model importedFloorModel;
     Model importedCrateModel;
@@ -53,6 +51,11 @@ public:
     const float reloadDuration = 1.0f;
 
     bool mousePressedLastFrame;
+
+    int killCount;
+
+    // NEW (added, nothing removed)
+    float enemyRespawnTimer;
 
     void run();
 

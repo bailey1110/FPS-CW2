@@ -1,8 +1,33 @@
-// Game.cpp
-
 #include "Game.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <cstdlib>
+#include <windows.h>
+#include <mmsystem.h>
+#include <string>
+#include <thread>
+#include <chrono>
+#include <atomic>
+
+#pragma comment(lib, "winmm.lib")
+
+static void PlayOverlapSound(const std::wstring& filePath)
+{
+    static std::atomic<int> soundCounter = 0;
+    std::wstring alias = L"snd_" + std::to_wstring(soundCounter++);
+
+    std::wstring openCmd = L"open \"" + filePath + L"\" type waveaudio alias " + alias;
+    mciSendStringW(openCmd.c_str(), NULL, 0, NULL);
+
+    std::wstring playCmd = L"play " + alias;
+    mciSendStringW(playCmd.c_str(), NULL, 0, NULL);
+
+    std::thread([alias]()
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::wstring closeCmd = L"close " + alias;
+        mciSendStringW(closeCmd.c_str(), NULL, 0, NULL);
+    }).detach();
+}
 
 void Game::run()
 {
@@ -16,7 +41,7 @@ void Game::initSystems()
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_CORE_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     window = glfwCreateWindow(1920, 1080, "FPS CW2", NULL, NULL);
     glfwMakeContextCurrent(window);
@@ -63,6 +88,9 @@ void Game::initSystems()
     lastTime = 0.0f;
     reloadTimer = 0.0f;
     mousePressedLastFrame = false;
+
+    killCount = 0;
+    enemyRespawnTimer = 0.0f;
 }
 
 void Game::gameLoop()
@@ -94,25 +122,19 @@ void Game::processInput(float deltaTime)
     if (mousePressed && !mousePressedLastFrame && reloadTimer <= 0.0f)
     {
         glm::vec3 dir = glm::normalize(player.front);
-        glm::vec3 right = glm::normalize(glm::cross(dir, player.up));
-        glm::vec3 camUp = glm::normalize(glm::cross(right, dir));
 
-        glm::vec3 gunBase =
-            player.position
-            - dir * 0.5f
-            + right * 0.2f
-            - camUp * 0.2f;
-
-        glm::vec3 muzzle = gunBase + dir * 2.0f;
-
+        glm::vec3 muzzle = player.position + dir * 2.0f;
         glm::vec3 aimPoint = player.position + dir * 50.0f;
 
         if (enemy.checkHit(player.position, dir))
         {
             aimPoint = enemy.position;
+            killCount++;
         }
 
         tracer.spawn(muzzle, aimPoint, 0.15f, 1.0f);
+
+        PlayOverlapSound(L".\\gun.wav");
 
         reloadTimer = reloadDuration;
     }
@@ -135,18 +157,24 @@ void Game::updateGame(float deltaTime)
 
     if (!enemy.isActive)
     {
-        enemy.position = glm::vec3(
-            (rand() % 5) - 2,
-            0.0f,
-            -(rand() % 10 + 3)
-        );
-        enemy.isActive = true;
+        enemyRespawnTimer += deltaTime;
+
+        if (enemyRespawnTimer > 1.0f)
+        {
+            enemy.position = glm::vec3(
+                (rand() % 5) - 2,
+                0.0f,
+                -(rand() % 10 + 3)
+            );
+
+            enemy.isActive = true;
+            enemyRespawnTimer = 0.0f;
+        }
     }
 }
 
 void Game::drawGame()
 {
-    glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::mat4 view = player.getViewMatrix();
@@ -155,22 +183,11 @@ void Game::drawGame()
 
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
-    glUniform1i(textureLoc, 0);
-
-    glm::vec3 lightDirection = glm::normalize(glm::vec3(-0.5f, -1.0f, -0.3f));
-
-    glUniform3f(glGetUniformLocation(shaderProgram, "lightDir"),
-        lightDirection.x, lightDirection.y, lightDirection.z);
-
-    glUniform3f(glGetUniformLocation(shaderProgram, "viewPos"),
-        player.position.x, player.position.y, player.position.z);
 
     drawFloor();
     drawEnemy();
     drawGun();
     drawTracer();
-
-    compass.draw(crosshairShaderProgram, player.position, player.front, enemy.position);
 
     drawUI();
 }
@@ -213,19 +230,11 @@ void Game::drawGun()
     glm::mat4 gunModelMat = glm::translate(glm::mat4(1.0f), gunPos) * gunRotation;
     gunModelMat = glm::scale(gunModelMat, glm::vec3(0.05f));
 
-    // FLAT LIGHTING FOR GUN
-    glUniform3f(glGetUniformLocation(shaderProgram, "lightDir"), 0.0f, -1.0f, 0.0f);
-
     glUniform1i(useTextureLoc, 1);
     importedGunTexture.bind(0);
 
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &gunModelMat[0][0]);
     importedGunModel.draw();
-
-    // RESTORE LIGHT
-    glm::vec3 lightDirection = glm::normalize(glm::vec3(-0.5f, -1.0f, -0.3f));
-    glUniform3f(glGetUniformLocation(shaderProgram, "lightDir"),
-        lightDirection.x, lightDirection.y, lightDirection.z);
 }
 
 void Game::drawTracer()
@@ -233,15 +242,95 @@ void Game::drawTracer()
     glm::mat4 tracerModel = glm::mat4(1.0f);
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &tracerModel[0][0]);
 
+    glUniform1i(useTextureLoc, 0);
+    glUniform3f(objectColorLoc, 1.0f, 1.0f, 1.0f);
+
     glDisable(GL_DEPTH_TEST);
     tracer.draw(objectColorLoc);
     glEnable(GL_DEPTH_TEST);
+
+    glUniform1i(useTextureLoc, 1);
 }
 
 void Game::drawUI()
 {
     crosshair.draw(crosshairShaderProgram);
     reloadUI.draw(crosshairShaderProgram);
+
+    float x = -0.95f;
+    float y = 0.9f;
+    float size = 0.025f;
+
+    int digits[10];
+    int count = killCount;
+    int numDigits = 0;
+
+    if (count == 0)
+    {
+        digits[numDigits++] = 0;
+    }
+    else
+    {
+        while (count > 0)
+        {
+            digits[numDigits++] = count % 10;
+            count /= 10;
+        }
+    }
+
+    for (int i = 0; i < numDigits; i++)
+    {
+        int digit = digits[numDigits - i - 1];
+
+        float s = size;
+        float t = s * 0.2f;
+
+        bool seg[10][7] = {
+            {1,1,1,1,1,1,0},
+            {0,1,1,0,0,0,0},
+            {1,1,0,1,1,0,1},
+            {1,1,1,1,0,0,1},
+            {0,1,1,0,0,1,1},
+            {1,0,1,1,0,1,1},
+            {1,0,1,1,1,1,1},
+            {1,1,1,0,0,0,0},
+            {1,1,1,1,1,1,1},
+            {1,1,1,1,0,1,1}
+        };
+
+        auto quad = [&](float x1,float y1,float x2,float y2)
+        {
+            float v[] = {x1,y1,x2,y1,x2,y2,x1,y2};
+
+            unsigned int VAO,VBO;
+            glGenVertexArrays(1,&VAO);
+            glGenBuffers(1,&VBO);
+
+            glBindVertexArray(VAO);
+            glBindBuffer(GL_ARRAY_BUFFER,VBO);
+            glBufferData(GL_ARRAY_BUFFER,sizeof(v),v,GL_STATIC_DRAW);
+
+            glVertexAttribPointer(0,2,GL_FLOAT,GL_FALSE,2*sizeof(float),(void*)0);
+            glEnableVertexAttribArray(0);
+
+            glUseProgram(crosshairShaderProgram);
+            glDrawArrays(GL_TRIANGLE_FAN,0,4);
+
+            glDeleteVertexArrays(1,&VAO);
+            glDeleteBuffers(1,&VBO);
+        };
+
+        bool* s7 = seg[digit];
+        float ox = x + i * (size * 1.5f);
+
+        if(s7[0]) quad(ox,y+s, ox+s,y+s-t);
+        if(s7[1]) quad(ox+s-t,y+s, ox+s,y);
+        if(s7[2]) quad(ox+s-t,y, ox+s,y-s);
+        if(s7[3]) quad(ox,y-s+t, ox+s,y-s);
+        if(s7[4]) quad(ox,y, ox+t,y-s);
+        if(s7[5]) quad(ox,y+s, ox+t,y);
+        if(s7[6]) quad(ox,y, ox+s,y-t);
+    }
 }
 
 void Game::framebuffer_size_callback(GLFWwindow* window, int width, int height)

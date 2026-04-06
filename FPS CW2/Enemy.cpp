@@ -1,7 +1,32 @@
-// Enemy.cpp
-
 #include "Enemy.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include <windows.h>
+#include <mmsystem.h>
+#include <string>
+#include <thread>
+#include <chrono>
+#include <atomic>
+
+#pragma comment(lib, "winmm.lib")
+
+static void PlayOverlapSound(const std::wstring& filePath)
+{
+    static std::atomic<int> soundCounter = 10000;
+    std::wstring alias = L"snd_" + std::to_wstring(soundCounter++);
+
+    std::wstring openCmd = L"open \"" + filePath + L"\" type waveaudio alias " + alias;
+    mciSendStringW(openCmd.c_str(), NULL, 0, NULL);
+
+    std::wstring playCmd = L"play " + alias;
+    mciSendStringW(playCmd.c_str(), NULL, 0, NULL);
+
+    std::thread([alias]()
+        {
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+            std::wstring closeCmd = L"close " + alias;
+            mciSendStringW(closeCmd.c_str(), NULL, 0, NULL);
+        }).detach();
+}
 
 void Enemy::setup(Model* m, Texture* t)
 {
@@ -44,5 +69,9 @@ bool Enemy::checkHit(glm::vec3 rayOrigin, glm::vec3 rayDir)
         return false;
 
     isActive = false;
+
+    // PLAY IMMEDIATELY (no delay)
+    PlayOverlapSound(L".\\crate.wav");
+
     return true;
 }

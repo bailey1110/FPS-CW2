@@ -11,26 +11,27 @@ uniform int useTexture;
 
 uniform vec3 lightDir;
 uniform vec3 viewPos;
+uniform vec3 objectColor;
 
 void main()
 {
-    vec3 baseColor;
+    // TRACER / UNTEXTURED OBJECTS (pure colour, no lighting)
+    if (useTexture == 0)
+    {
+        FragColor = vec4(objectColor, 1.0);
+        return;
+    }
 
-    if(useTexture == 1)
-        baseColor = texture(texture1, TexCoord).rgb;
-    else
-        baseColor = vec3(1.0);
+    // TEXTURED OBJECTS (normal lighting)
+    vec3 baseColor = texture(texture1, TexCoord).rgb;
 
-    // AMBIENT
     vec3 ambient = 0.15 * baseColor;
 
-    // DIFFUSE
     vec3 norm = normalize(Normal);
     vec3 light = normalize(-lightDir);
     float diff = max(dot(norm, light), 0.0);
     vec3 diffuse = diff * baseColor;
 
-    // SPECULAR
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = reflect(-light, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
