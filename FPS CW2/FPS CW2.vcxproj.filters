@@ -62,6 +62,9 @@
     <ClCompile Include="Compass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TextRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\..\VS ext Libraries\glfw-3.4.bin.WIN64\glfw-3.4.bin.WIN64\include\GLFW\glfw3.h">
@@ -112,6 +115,9 @@
     <ClInclude Include="Compass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TextRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vertexShader.glsl">
@@ -124,6 +130,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="crosshairFragment.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="textVertex.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="textFragment.glsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

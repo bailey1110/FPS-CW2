@@ -105,13 +105,13 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\VS ext Libraries\glad\include;C:\VS ext Libraries\glfw-3.4.bin.WIN64\glfw-3.4.bin.WIN64\include;C:\VS ext Libraries\glm-master\glm-master</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VS ext Libraries\glad\include;C:\VS ext Libraries\glfw-3.4.bin.WIN64\glfw-3.4.bin.WIN64\include;C:\VS ext Libraries\glm-master\glm-master;C:\VS ext Libraries\freetype-2.14.3\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VS ext Libraries\glfw-3.4.bin.WIN64\glfw-3.4.bin.WIN64\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VS ext Libraries\glfw-3.4.bin.WIN64\glfw-3.4.bin.WIN64\lib-vc2022;C:\VS ext Libraries\freetype-2.14.3\objs\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(ProjectDir)*.glsl" "$(OutDir)"</Command>
@@ -146,6 +146,7 @@
     <ClCompile Include="ReloadUI.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="stb_image.cpp" />
+    <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -164,12 +165,15 @@
     <ClInclude Include="ReloadUI.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="TextRenderer.h" />
     <ClInclude Include="Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="crosshairFragment.glsl" />
     <None Include="crosshairVertex.glsl" />
     <None Include="fragmentShader.glsl" />
+    <None Include="textFragment.glsl" />
+    <None Include="textVertex.glsl" />
     <None Include="vertexShader.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

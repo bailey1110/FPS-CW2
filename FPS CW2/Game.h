@@ -13,12 +13,14 @@
 #include "Model.h"
 #include "Texture.h"
 #include "Compass.h"
+#include "TextRenderer.h"
 
 class Game
 {
 public:
     GLFWwindow* window;
-
+    TextRenderer textRenderer;
+    unsigned int textShader;
     Player player;
     Enemy enemy;
     Crosshair crosshair;

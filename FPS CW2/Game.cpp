@@ -61,6 +61,9 @@ void Game::initSystems()
     shaderProgram = createShaderProgram("vertexShader.glsl", "fragmentShader.glsl");
     crosshairShaderProgram = createShaderProgram("crosshairVertex.glsl", "crosshairFragment.glsl");
 
+    // NEW TEXT SHADER
+    textShader = createShaderProgram("textVertex.glsl", "textFragment.glsl");
+
     modelLoc = glGetUniformLocation(shaderProgram, "model");
     viewLoc = glGetUniformLocation(shaderProgram, "view");
     projectionLoc = glGetUniformLocation(shaderProgram, "projection");
@@ -74,6 +77,9 @@ void Game::initSystems()
     tracer.setup();
     reloadUI.setup();
     compass.setup();
+
+    // INIT TEXT RENDERER
+    textRenderer.init("C:/Windows/Fonts/arial.ttf");
 
     importedFloorModel.loadOBJ("Models/Floor.obj");
     importedCrateModel.loadOBJ("Models/crate obj.obj");
@@ -276,41 +282,15 @@ void Game::drawUI()
     crosshair.draw(crosshairShaderProgram);
     reloadUI.draw(crosshairShaderProgram);
 
-    // KILL COUNT (TOP LEFT SAFE UI)
-    float x = -0.95f;
-    float y = 0.9f;
-    float size = 0.03f;
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    for (int i = 0; i < killCount; i++)
-    {
-        float offset = i * (size * 1.5f);
+    std::string text = "Crates destroyed: " + std::to_string(killCount);
+    textRenderer.renderText(textShader, text, -0.95f, 0.9f, 0.0015f, glm::vec3(1.0f, 1.0f, 1.0f));
 
-        float verts[] =
-        {
-            x + offset, y,
-            x + offset + size, y,
-            x + offset + size, y - size,
-            x + offset, y - size
-        };
-
-        unsigned int VAO, VBO;
-
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
-
-        glBindVertexArray(VAO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
-
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-
-        glUseProgram(crosshairShaderProgram);
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-        glDeleteVertexArrays(1, &VAO);
-        glDeleteBuffers(1, &VBO);
-    }
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
 }
 
 void Game::framebuffer_size_callback(GLFWwindow* window, int width, int height)
