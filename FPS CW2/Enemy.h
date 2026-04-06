@@ -1,4 +1,5 @@
 #pragma once
+
 #include <glm/glm.hpp>
 #include "Model.h"
 #include "Texture.h"
@@ -6,15 +7,19 @@
 class Enemy
 {
 public:
+    glm::vec3 position;
+    float radius = 0.5f;
+
+    bool isActive;
+
     Model* model;
     Texture* texture;
 
-    glm::vec3 position;
-    bool isActive;
-
-    float radius;
-
     void setup(Model* m, Texture* t);
-    void draw(unsigned int shaderProgram, unsigned int modelLoc, unsigned int useTextureLoc);
-    bool checkHit(glm::vec3 rayOrigin, glm::vec3 rayDir);
+
+    bool checkHit(const glm::vec3& origin, const glm::vec3& dir);
+
+    bool isColliding(const glm::vec3& otherPos, float otherRadius);
+
+    void draw(unsigned int shader, GLint modelLoc, GLint useTextureLoc);
 };

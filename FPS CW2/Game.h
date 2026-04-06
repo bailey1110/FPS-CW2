@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <vector>
 
 #include "Player.h"
 #include "Enemy.h"
@@ -14,19 +15,26 @@
 #include "Texture.h"
 #include "Compass.h"
 #include "TextRenderer.h"
+#include "UIManager.h"
+#include "Renderer.h"
 
 class Game
 {
 public:
     GLFWwindow* window;
-    TextRenderer textRenderer;
-    unsigned int textShader;
+
     Player player;
-    Enemy enemy;
+
+    std::vector<Enemy> enemies;
+
     Crosshair crosshair;
     BulletTracer tracer;
     ReloadUI reloadUI;
     Compass compass;
+
+    TextRenderer textRenderer;
+    UIManager uiManager;
+    Renderer renderer;
 
     Model importedFloorModel;
     Model importedCrateModel;
@@ -38,13 +46,7 @@ public:
 
     unsigned int shaderProgram;
     unsigned int crosshairShaderProgram;
-
-    GLint modelLoc;
-    GLint viewLoc;
-    GLint projectionLoc;
-    GLint textureLoc;
-    GLint useTextureLoc;
-    GLint objectColorLoc;
+    unsigned int textShader;
 
     glm::mat4 projection;
 
@@ -56,9 +58,6 @@ public:
 
     int killCount;
 
-    // NEW (added, nothing removed)
-    float enemyRespawnTimer;
-
     void run();
 
 private:
@@ -68,11 +67,7 @@ private:
     void updateGame(float deltaTime);
     void drawGame();
 
-    void drawFloor();
-    void drawEnemy();
-    void drawGun();
-    void drawTracer();
-    void drawUI();
+    void spawnEnemies(int count);
 
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
     static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
