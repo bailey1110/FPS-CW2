@@ -25,32 +25,36 @@ void main()
         ? texture(texture1, TexCoord).rgb
         : vec3(1.0);
 
+    vec3 dir = normalize(lightDirPlayer);
     vec3 toFrag = FragPos - lightPos;
     float dist = length(toFrag);
+    vec3 toFragDir = normalize(toFrag);
 
-    vec3 L = normalize(toFrag);
+    float coneDot = dot(dir, toFragDir);
 
-    vec3 forwardXZ = normalize(vec3(lightDirPlayer.x, 0.0, lightDirPlayer.z));
-    vec3 dirXZ = normalize(vec3(L.x, 0.0, L.z));
+    float innerCutoff = 0.92;
+    float outerCutoff = 0.55;
 
-    float angle = dot(forwardXZ, dirXZ);
+    float coneFactor = smoothstep(outerCutoff, innerCutoff, coneDot);
 
-    float cutoff = 0.2;
-    float intensity = smoothstep(cutoff, 1.0, angle);
+    float radius = 16.0;
+    float distanceFactor = 1.0 - clamp(dist / radius, 0.0, 1.0);
+    distanceFactor = pow(distanceFactor, 1.35);
 
-    float radius = 14.0;
-    float falloff = 1.0 - clamp(dist / radius, 0.0, 1.0);
-    falloff = pow(falloff, 1.1);
+    float diffuseAmount = max(dot(norm, -dir), 0.0);
 
-    float diff = max(dot(norm, -lightDirPlayer), 0.0);
+    vec3 diffuse = baseColor * diffuseAmount * coneFactor * distanceFactor * flashlightOn * 6.0;
+    vec3 ambient = baseColor * 0.08;
 
-    float bloom = 1.0 / (dist * 0.25 + 1.0);
+    float beamCore = coneFactor * distanceFactor;
+    float beamBloom = pow(beamCore, 1.6) * 2.2;
 
-    vec3 diffuse = baseColor * diff * intensity * falloff * flashlightOn * 14.0 * bloom;
+    float heightFade = 1.0 - clamp(abs(FragPos.y - lightPos.y) / 6.0, 0.0, 1.0);
+    beamBloom *= mix(0.7, 1.0, heightFade);
 
-    vec3 ambient = baseColor * 0.1;
+    vec3 beamColor = vec3(1.0, 0.95, 0.85) * beamBloom * flashlightOn;
 
-    vec3 lighting = ambient + diffuse;
+    vec3 lighting = ambient + diffuse + beamColor;
 
     lighting = lighting / (lighting + vec3(1.0));
 

@@ -49,8 +49,8 @@ void Renderer::setMatrices(const glm::mat4& view,
 
     glm::vec3 lightPos =
         camPos
-        + dir * 1.2f
-        + glm::vec3(0.0f, 0.9f, 0.0f);
+        + dir * 1.4f
+        + glm::vec3(0.0f, 1.0f, 0.0f);
 
     glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
     glUniform3f(lightDirPlayerLoc, dir.x, dir.y, dir.z);
