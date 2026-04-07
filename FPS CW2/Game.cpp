@@ -152,14 +152,16 @@ void Game::processInput(float deltaTime)
             if (!enemy.isActive)
                 continue;
 
+            glm::vec3 offset = enemy.position - player.position;
+            float nearDist2 = glm::dot(offset, offset);
+            if (nearDist2 > 2500.0f)
+                continue;
+
             if (enemy.checkHit(player.position, dir))
             {
-                glm::vec3 d = enemy.position - player.position;
-                float dist2 = glm::dot(d, d);
-
-                if (dist2 < closestDist2)
+                if (nearDist2 < closestDist2)
                 {
-                    closestDist2 = dist2;
+                    closestDist2 = nearDist2;
                     hitIndex = i;
                 }
             }
@@ -198,6 +200,10 @@ void Game::updateGame(float deltaTime)
         if (!enemy.isActive)
             continue;
 
+        glm::vec3 enemyDelta = enemy.position - player.position;
+        if (glm::dot(enemyDelta, enemyDelta) > 100.0f)
+            continue;
+
         const float minDistXZ = 1.5f;
 
         glm::vec2 playerXZ(player.position.x, player.position.z);
@@ -219,11 +225,18 @@ void Game::updateGame(float deltaTime)
         }
     }
 
-    enemies.erase(
-        std::remove_if(enemies.begin(), enemies.end(),
-            [](const Enemy& e) { return !e.isActive; }),
-        enemies.end()
-    );
+    for (int i = 0; i < (int)enemies.size();)
+    {
+        if (!enemies[i].isActive)
+        {
+            enemies[i] = enemies.back();
+            enemies.pop_back();
+        }
+        else
+        {
+            i++;
+        }
+    }
 
     int targetCount = 1;
     if (killCount >= 3)
@@ -241,9 +254,9 @@ void Game::drawGame()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::mat4 view = player.getViewMatrix();
-
     bool flashlight = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
 
+    glUseProgram(shaderProgram);
     renderer.setMatrices(view, projection, player.position, player.front, flashlight);
 
     renderer.drawFloor(importedFloorModel, importedFloorTexture);
@@ -280,8 +293,6 @@ void Game::drawGame()
 
     for (const Enemy& enemy : enemies)
     {
-        if (!enemy.isActive) continue;
-
         glm::vec3 d = enemy.position - player.position;
         float dist2 = glm::dot(d, d);
 

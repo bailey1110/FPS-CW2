@@ -23,12 +23,10 @@ public:
     GLint lightDirLoc;
     GLint viewPosLoc;
 
-    // FOG
     GLint fogColorLoc;
     GLint fogMinLoc;
     GLint fogMaxLoc;
 
-    // FLASHLIGHT
     GLint lightPosLoc;
     GLint lightDirPlayerLoc;
     GLint flashlightOnLoc;

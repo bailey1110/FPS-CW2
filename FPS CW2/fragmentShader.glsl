@@ -35,22 +35,20 @@ void main()
 
     float angle = dot(forwardXZ, dirXZ);
 
-    float cutoff = 0.3;
+    float cutoff = 0.2;
     float intensity = smoothstep(cutoff, 1.0, angle);
 
-    float radius = 12.0;
+    float radius = 14.0;
     float falloff = 1.0 - clamp(dist / radius, 0.0, 1.0);
-    falloff = pow(falloff, 1.2);
+    falloff = pow(falloff, 1.1);
 
     float diff = max(dot(norm, -lightDirPlayer), 0.0);
 
-    float verticalFade = clamp(abs(dot(norm, vec3(0.0, 1.0, 0.0))), 0.2, 1.0);
+    float bloom = 1.0 / (dist * 0.25 + 1.0);
 
-    float safeFalloff = falloff / (1.0 + dist * 0.3);
+    vec3 diffuse = baseColor * diff * intensity * falloff * flashlightOn * 14.0 * bloom;
 
-    vec3 diffuse = baseColor * diff * intensity * safeFalloff * flashlightOn * 8.0 * verticalFade;
-
-    vec3 ambient = baseColor * 0.08;
+    vec3 ambient = baseColor * 0.1;
 
     vec3 lighting = ambient + diffuse;
 

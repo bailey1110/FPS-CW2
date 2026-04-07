@@ -48,18 +48,25 @@ void Texture::load(const char* path)
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
-        std::cout << "Loaded texture: " << path << std::endl;
+        stbi_image_free(data);
     }
     else
     {
         std::cout << "Failed to load texture: " << path << std::endl;
     }
-
-    stbi_image_free(data);
 }
 
 void Texture::bind(unsigned int unit)
 {
+    static unsigned int lastBound[32] = { 0 };
+
+    if (unit >= 32)
+        unit = 0;
+
+    if (lastBound[unit] == ID)
+        return;
+
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, ID);
+    lastBound[unit] = ID;
 }

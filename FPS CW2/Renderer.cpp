@@ -6,6 +6,8 @@ void Renderer::init(unsigned int shader)
 {
     shaderProgram = shader;
 
+    glUseProgram(shaderProgram);
+
     modelLoc = glGetUniformLocation(shaderProgram, "model");
     viewLoc = glGetUniformLocation(shaderProgram, "view");
     projectionLoc = glGetUniformLocation(shaderProgram, "projection");
@@ -23,6 +25,11 @@ void Renderer::init(unsigned int shader)
     lightPosLoc = glGetUniformLocation(shaderProgram, "lightPos");
     lightDirPlayerLoc = glGetUniformLocation(shaderProgram, "lightDirPlayer");
     flashlightOnLoc = glGetUniformLocation(shaderProgram, "flashlightOn");
+
+    glUniform1i(textureLoc, 0);
+    glUniform3f(fogColorLoc, 0.0f, 0.0f, 0.0f);
+    glUniform1f(fogMinLoc, 5.0f);
+    glUniform1f(fogMaxLoc, 60.0f);
 }
 
 void Renderer::setMatrices(const glm::mat4& view,
@@ -31,29 +38,22 @@ void Renderer::setMatrices(const glm::mat4& view,
     const glm::vec3& camFront,
     bool flashlightOn)
 {
-    glUseProgram(shaderProgram);
-
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
-    glUniform1i(textureLoc, 0);
 
     glm::vec3 lightDir = glm::normalize(glm::vec3(-0.5f, -1.0f, -0.3f));
     glUniform3f(lightDirLoc, lightDir.x, lightDir.y, lightDir.z);
     glUniform3f(viewPosLoc, camPos.x, camPos.y, camPos.z);
 
-    glUniform3f(fogColorLoc, 0.0f, 0.0f, 0.0f);
-    glUniform1f(fogMinLoc, 5.0f);
-    glUniform1f(fogMaxLoc, 60.0f);
-
     glm::vec3 dir = glm::normalize(camFront);
 
     glm::vec3 lightPos =
         camPos
-        + dir * 0.8f
-        + glm::vec3(0.0f, 0.6f, 0.0f);
+        + dir * 1.2f
+        + glm::vec3(0.0f, 0.9f, 0.0f);
 
     glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
-    glUniform3f(lightDirPlayerLoc, camFront.x, camFront.y, camFront.z);
+    glUniform3f(lightDirPlayerLoc, dir.x, dir.y, dir.z);
     glUniform1f(flashlightOnLoc, flashlightOn ? 1.0f : 0.0f);
 }
 
