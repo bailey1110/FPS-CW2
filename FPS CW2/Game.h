@@ -18,57 +18,72 @@
 #include "UIManager.h"
 #include "Renderer.h"
 
+// Main game class that controls the entire application
 class Game
 {
 public:
-    GLFWwindow* window;
+    GLFWwindow* window; // Pointer to the GLFW window
 
-    Player player;
+    Player player; // Player object (camera + movement)
 
-    std::vector<Enemy> enemies;
+    std::vector<Enemy> enemies; // List of active enemies in the game
 
-    Crosshair crosshair;
-    BulletTracer tracer;
-    ReloadUI reloadUI;
-    Compass compass;
+    Crosshair crosshair;     // UI crosshair
+    BulletTracer tracer;     // Bullet tracer effect
+    ReloadUI reloadUI;       // Reload progress UI
+    Compass compass;         // Direction indicator for enemies
 
-    TextRenderer textRenderer;
-    UIManager uiManager;
-    Renderer renderer;
+    TextRenderer textRenderer; // Handles text rendering (UI text)
+    UIManager uiManager;       // Manages UI drawing
+    Renderer renderer;         // Handles all 3D rendering
 
-    Model importedFloorModel;
-    Model importedCrateModel;
-    Model importedGunModel;
+    Model importedFloorModel; // Floor model
+    Model importedCrateModel; // Enemy model (crate)
+    Model importedGunModel;   // Gun model
 
-    Texture importedFloorTexture;
-    Texture importedCrateTexture;
-    Texture importedGunTexture;
+    Texture importedFloorTexture; // Floor texture
+    Texture importedCrateTexture; // Enemy texture
+    Texture importedGunTexture;   // Gun texture
 
-    unsigned int shaderProgram;
-    unsigned int crosshairShaderProgram;
-    unsigned int textShader;
+    unsigned int shaderProgram;          // Main 3D shader
+    unsigned int crosshairShaderProgram; // UI shader (crosshair, compass, etc.)
+    unsigned int textShader;             // Shader used for text rendering
 
-    glm::mat4 projection;
+    glm::mat4 projection; // Projection matrix (perspective)
 
-    float lastTime;
-    float reloadTimer;
-    const float reloadDuration = 1.0f;
+    float lastTime;     // Time of previous frame (for delta time)
+    float reloadTimer;  // Current reload timer
+    const float reloadDuration = 1.0f; // Time required to reload
 
-    bool mousePressedLastFrame;
+    bool mousePressedLastFrame; // Tracks mouse state for single-click detection
 
-    int killCount;
+    int killCount; // Number of enemies eliminated
 
+    // Starts the game (entry point after main)
     void run();
 
 private:
+    // Initialise window, OpenGL, assets, UI, etc.
     void initSystems();
+
+    // Main loop (input → update → render)
     void gameLoop();
+
+    // Handle keyboard and mouse input
     void processInput(float deltaTime);
+
+    // Update all game logic
     void updateGame(float deltaTime);
+
+    // Render the scene and UI
     void drawGame();
 
+    // Spawn a given number of enemies
     void spawnEnemies(int count);
 
+    // GLFW callback: window resize
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+
+    // GLFW callback: mouse movement
     static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 };
