@@ -4,12 +4,14 @@
 #include <sstream>
 #include <vector>
 
+// Constructor: initialise OpenGL handles
 Model::Model()
 {
-    VAO = 0;
-    VBO = 0;
+    VAO = 0; // Vertex Array Object
+    VBO = 0; // Vertex Buffer Object
 }
 
+// Load a simple cube (currently only one face defined)
 void Model::loadSimpleCube()
 {
     vertices = {
@@ -22,9 +24,10 @@ void Model::loadSimpleCube()
         {{-0.5f,-0.5f,-0.5f},{0.0f,0.0f},{ 0.0f, 0.0f,-1.0f}},
     };
 
-    setupMesh();
+    setupMesh(); // Upload to GPU
 }
 
+// Load a flat plane (used as floor)
 void Model::loadPlane()
 {
     vertices = {
@@ -37,16 +40,18 @@ void Model::loadPlane()
         {{-10.0f, 0.0f, -10.0f}, {0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
     };
 
-    setupMesh();
+    setupMesh(); // Upload to GPU
 }
 
+// Generate a cylinder procedurally
 void Model::loadCylinder(int segments)
 {
-    vertices.clear();
+    vertices.clear(); // Clear previous data
 
     float radius = 0.1f;
     float length = 2.0f;
 
+    // Loop around circle
     for (int i = 0; i < segments; i++)
     {
         float theta1 = (float)i / segments * 2.0f * 3.14159f;
@@ -58,9 +63,11 @@ void Model::loadCylinder(int segments)
         float x2 = cos(theta2) * radius;
         float y2 = sin(theta2) * radius;
 
+        // Normals pointing outward
         glm::vec3 n1 = glm::normalize(glm::vec3(x1, y1, 0.0f));
         glm::vec3 n2 = glm::normalize(glm::vec3(x2, y2, 0.0f));
 
+        // Two triangles forming a quad
         vertices.push_back({ {x1, y1, 0.0f},   {0.0f, 0.0f}, n1 });
         vertices.push_back({ {x2, y2, 0.0f},   {1.0f, 0.0f}, n2 });
         vertices.push_back({ {x2, y2, length}, {1.0f, 1.0f}, n2 });
@@ -70,9 +77,10 @@ void Model::loadCylinder(int segments)
         vertices.push_back({ {x1, y1, 0.0f},   {0.0f, 0.0f}, n1 });
     }
 
-    setupMesh();
+    setupMesh(); // Upload to GPU
 }
 
+// Parse OBJ face token (v/vt/vn format)
 static void parseFaceVertex(const std::string& token, int& positionIndex, int& texCoordIndex, int& normalIndex)
 {
     positionIndex = 0;
@@ -80,6 +88,8 @@ static void parseFaceVertex(const std::string& token, int& positionIndex, int& t
     normalIndex = 0;
 
     size_t firstSlash = token.find('/');
+
+    // Only position index
     if (firstSlash == std::string::npos)
     {
         positionIndex = std::stoi(token);
@@ -91,6 +101,8 @@ static void parseFaceVertex(const std::string& token, int& positionIndex, int& t
         positionIndex = std::stoi(posPart);
 
     size_t secondSlash = token.find('/', firstSlash + 1);
+
+    // Position/texture
     if (secondSlash == std::string::npos)
     {
         std::string texPart = token.substr(firstSlash + 1);
@@ -99,6 +111,7 @@ static void parseFaceVertex(const std::string& token, int& positionIndex, int& t
     }
     else
     {
+        // Position/texture/normal
         std::string texPart = token.substr(firstSlash + 1, secondSlash - firstSlash - 1);
         std::string normPart = token.substr(secondSlash + 1);
 
@@ -110,6 +123,7 @@ static void parseFaceVertex(const std::string& token, int& positionIndex, int& t
     }
 }
 
+// Load model from OBJ file
 bool Model::loadOBJ(const std::string& path)
 {
     std::ifstream file(path);
@@ -122,6 +136,8 @@ bool Model::loadOBJ(const std::string& path)
     vertices.clear();
 
     std::string line;
+
+    // Read file line-by-line
     while (std::getline(file, line))
     {
         if (line.empty() || line[0] == '#')
@@ -131,25 +147,29 @@ bool Model::loadOBJ(const std::string& path)
         std::string prefix;
         ss >> prefix;
 
+        // Vertex position
         if (prefix == "v")
         {
             glm::vec3 pos;
             ss >> pos.x >> pos.y >> pos.z;
             positions.push_back(pos);
         }
+        // Texture coordinates
         else if (prefix == "vt")
         {
             glm::vec2 uv;
             ss >> uv.x >> uv.y;
-            uv.y = 1.0f - uv.y;
+            uv.y = 1.0f - uv.y; // Flip for OpenGL
             texCoords.push_back(uv);
         }
+        // Normals
         else if (prefix == "vn")
         {
             glm::vec3 n;
             ss >> n.x >> n.y >> n.z;
             normals.push_back(glm::normalize(n));
         }
+        // Faces
         else if (prefix == "f")
         {
             std::vector<std::string> faceTokens;
@@ -161,6 +181,7 @@ bool Model::loadOBJ(const std::string& path)
             if (faceTokens.size() < 3)
                 continue;
 
+            // Triangulate faces
             for (size_t i = 1; i + 1 < faceTokens.size(); ++i)
             {
                 std::string tri[3] = { faceTokens[0], faceTokens[i], faceTokens[i + 1] };
@@ -173,10 +194,12 @@ bool Model::loadOBJ(const std::string& path)
                     int p = 0, t = 0, n = 0;
                     parseFaceVertex(tri[j], p, t, n);
 
+                    // Default values
                     triVerts[j].position = glm::vec3(0.0f);
                     triVerts[j].texCoords = glm::vec2(0.0f);
                     triVerts[j].normal = glm::vec3(0.0f, 1.0f, 0.0f);
 
+                    // Assign values if valid
                     if (p > 0 && p <= (int)positions.size())
                         triVerts[j].position = positions[p - 1];
 
@@ -189,6 +212,7 @@ bool Model::loadOBJ(const std::string& path)
                         hasNormals = false;
                 }
 
+                // Compute normal if missing
                 if (!hasNormals)
                 {
                     glm::vec3 edge1 = triVerts[1].position - triVerts[0].position;
@@ -203,6 +227,7 @@ bool Model::loadOBJ(const std::string& path)
                     triVerts[2].normal = faceNormal;
                 }
 
+                // Add triangle to vertex list
                 vertices.push_back(triVerts[0]);
                 vertices.push_back(triVerts[1]);
                 vertices.push_back(triVerts[2]);
@@ -213,38 +238,46 @@ bool Model::loadOBJ(const std::string& path)
     if (vertices.empty())
         return false;
 
-    setupMesh();
+    setupMesh(); // Upload to GPU
     return true;
 }
 
+// Upload vertex data and configure attributes
 void Model::setupMesh()
 {
+    // Delete old buffers if they exist
     if (VAO != 0)
         glDeleteVertexArrays(1, &VAO);
 
     if (VBO != 0)
         glDeleteBuffers(1, &VBO);
 
+    // Generate new buffers
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
+    // Upload vertex data
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
 
+    // Position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
     glEnableVertexAttribArray(0);
 
+    // Texture coordinates
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
     glEnableVertexAttribArray(1);
 
+    // Normal attribute
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
     glEnableVertexAttribArray(2);
 
     glBindVertexArray(0);
 }
 
+// Draw the model
 void Model::draw()
 {
     glBindVertexArray(VAO);
