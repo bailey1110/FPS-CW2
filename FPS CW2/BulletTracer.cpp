@@ -14,7 +14,7 @@ BulletTracer::BulletTracer()
     flashActive = false;
     flashTimer = 0.0f;
     flashDuration = 0.5f;
-    flashSize = 1.0f; // now treated as scale, not pixels
+    flashSize = 1.0f; 
 }
 
 void BulletTracer::setup()
@@ -36,7 +36,6 @@ void BulletTracer::spawn(glm::vec3 s, glm::vec3 e, float travelTime, float stayT
     active = true;
     finished = false;
 
-    // FLASH RESET
     flashActive = true;
     flashTimer = flashDuration;
 
@@ -93,7 +92,6 @@ void BulletTracer::update(float dt)
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(verts), verts);
     }
 
-    // FLASH UPDATE
     if (flashActive)
     {
         flashTimer -= dt;
@@ -108,7 +106,6 @@ void BulletTracer::draw(int colorLoc)
 
     glUniform3f(colorLoc, 1.0f, 1.0f, 1.0f);
 
-    // DRAW LINE
     if (active)
     {
         glLineWidth(6.0f);
@@ -117,7 +114,6 @@ void BulletTracer::draw(int colorLoc)
         glLineWidth(1.0f);
     }
 
-    // DRAW FLASH (distance-scaled)
     if (flashActive)
     {
         float distance = glm::length(start - currentEnd);

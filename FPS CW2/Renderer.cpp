@@ -55,6 +55,8 @@ void Renderer::setMatrices(const glm::mat4& view,
     glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
     glUniform3f(lightDirPlayerLoc, dir.x, dir.y, dir.z);
     glUniform1f(flashlightOnLoc, flashlightOn ? 1.0f : 0.0f);
+
+    glUniform3f(viewPosLoc, camPos.x, camPos.y, camPos.z);
 }
 
 void Renderer::drawFloor(Model& model, Texture& tex)

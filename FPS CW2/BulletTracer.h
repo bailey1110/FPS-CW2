@@ -18,7 +18,6 @@ public:
     unsigned int VAO;
     unsigned int VBO;
 
-    // FLASH
     bool flashActive;
     float flashTimer;
     float flashDuration;

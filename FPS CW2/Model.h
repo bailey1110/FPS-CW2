@@ -1,5 +1,3 @@
-// Model.h
-
 #pragma once
 
 #include <vector>

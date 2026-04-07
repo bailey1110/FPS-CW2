@@ -1,5 +1,3 @@
-// Compass.cpp
-
 #include "Compass.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -47,7 +45,7 @@ void Compass::draw(unsigned int shader, glm::vec3 playerPos, glm::vec3 playerFro
     }
     else
     {
-        float normalized = angle / 1.04719755f; // ~60 degrees
+        float normalized = angle / 1.04719755f;
         if (normalized > 1.0f) normalized = 1.0f;
         if (normalized < -1.0f) normalized = -1.0f;
         screenX = normalized * barHalfWidth;

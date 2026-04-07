@@ -1,5 +1,3 @@
-// Player.cpp
-
 #include "Player.h"
 
 Player::Player()
@@ -14,7 +12,7 @@ Player::Player()
     lastY = 540.0f;
     firstMouse = true;
 
-    speed = 4.0f; // 20% slower than 5.0
+    speed = 4.0f; 
     sensitivity = 0.1f;
 }
 

@@ -1,5 +1,3 @@
-// Model.cpp
-
 #include "Model.h"
 #include <cmath>
 #include <fstream>

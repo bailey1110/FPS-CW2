@@ -18,7 +18,7 @@ bool Enemy::checkHit(const glm::vec3& origin, const glm::vec3& dir)
 
     float discriminant = b * b - 4 * a * c;
 
-    return discriminant > 0.0f; // ← NO state change here
+    return discriminant > 0.0f;
 }
 
 bool Enemy::isColliding(const glm::vec3& otherPos, float otherRadius)

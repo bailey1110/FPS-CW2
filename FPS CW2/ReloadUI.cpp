@@ -21,7 +21,6 @@ void ReloadUI::update(float progress)
     if (progress < 0.0f) progress = 0.0f;
     if (progress > 1.0f) progress = 1.0f;
 
-    // bottom-left corner with slight offset
     float left = -0.95f;
     float right = left + (0.35f * progress);
     float top = -0.80f;
