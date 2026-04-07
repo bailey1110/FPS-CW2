@@ -19,12 +19,27 @@ public:
     GLint textureLoc;
     GLint useTextureLoc;
     GLint objectColorLoc;
+
     GLint lightDirLoc;
     GLint viewPosLoc;
 
+    // FOG
+    GLint fogColorLoc;
+    GLint fogMinLoc;
+    GLint fogMaxLoc;
+
+    // FLASHLIGHT
+    GLint lightPosLoc;
+    GLint lightDirPlayerLoc;
+    GLint flashlightOnLoc;
+
     void init(unsigned int shader);
 
-    void setMatrices(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& camPos);
+    void setMatrices(const glm::mat4& view,
+        const glm::mat4& projection,
+        const glm::vec3& camPos,
+        const glm::vec3& camFront,
+        bool flashlightOn);
 
     void drawFloor(Model& model, Texture& tex);
     void drawEnemy(Enemy& enemy);

@@ -217,7 +217,6 @@ void Game::updateGame(float deltaTime)
             player.position.x = corrected.x;
             player.position.z = corrected.y;
         }
-
     }
 
     enemies.erase(
@@ -238,12 +237,14 @@ void Game::updateGame(float deltaTime)
 
 void Game::drawGame()
 {
-    glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::mat4 view = player.getViewMatrix();
 
-    renderer.setMatrices(view, projection, player.position);
+    bool flashlight = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
+
+    renderer.setMatrices(view, projection, player.position, player.front, flashlight);
 
     renderer.drawFloor(importedFloorModel, importedFloorTexture);
 

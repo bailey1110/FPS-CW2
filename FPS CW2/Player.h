@@ -12,6 +12,8 @@ public:
     glm::vec3 front;
     glm::vec3 up;
 
+    float maxPitch = 30.0f;
+
     float yaw;
     float pitch;
     float lastX;

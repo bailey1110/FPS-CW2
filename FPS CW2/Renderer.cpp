@@ -15,9 +15,21 @@ void Renderer::init(unsigned int shader)
 
     lightDirLoc = glGetUniformLocation(shaderProgram, "lightDir");
     viewPosLoc = glGetUniformLocation(shaderProgram, "viewPos");
+
+    fogColorLoc = glGetUniformLocation(shaderProgram, "fogColor");
+    fogMinLoc = glGetUniformLocation(shaderProgram, "fogMin");
+    fogMaxLoc = glGetUniformLocation(shaderProgram, "fogMax");
+
+    lightPosLoc = glGetUniformLocation(shaderProgram, "lightPos");
+    lightDirPlayerLoc = glGetUniformLocation(shaderProgram, "lightDirPlayer");
+    flashlightOnLoc = glGetUniformLocation(shaderProgram, "flashlightOn");
 }
 
-void Renderer::setMatrices(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& camPos)
+void Renderer::setMatrices(const glm::mat4& view,
+    const glm::mat4& projection,
+    const glm::vec3& camPos,
+    const glm::vec3& camFront,
+    bool flashlightOn)
 {
     glUseProgram(shaderProgram);
 
@@ -26,9 +38,23 @@ void Renderer::setMatrices(const glm::mat4& view, const glm::mat4& projection, c
     glUniform1i(textureLoc, 0);
 
     glm::vec3 lightDir = glm::normalize(glm::vec3(-0.5f, -1.0f, -0.3f));
-
     glUniform3f(lightDirLoc, lightDir.x, lightDir.y, lightDir.z);
     glUniform3f(viewPosLoc, camPos.x, camPos.y, camPos.z);
+
+    glUniform3f(fogColorLoc, 0.0f, 0.0f, 0.0f);
+    glUniform1f(fogMinLoc, 5.0f);
+    glUniform1f(fogMaxLoc, 60.0f);
+
+    glm::vec3 dir = glm::normalize(camFront);
+
+    glm::vec3 lightPos =
+        camPos
+        + dir * 0.8f
+        + glm::vec3(0.0f, 0.6f, 0.0f);
+
+    glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
+    glUniform3f(lightDirPlayerLoc, camFront.x, camFront.y, camFront.z);
+    glUniform1f(flashlightOnLoc, flashlightOn ? 1.0f : 0.0f);
 }
 
 void Renderer::drawFloor(Model& model, Texture& tex)
@@ -44,7 +70,6 @@ void Renderer::drawFloor(Model& model, Texture& tex)
         for (int z = -1; z <= 1; z++)
         {
             glm::mat4 mat = glm::mat4(1.0f);
-
             mat = glm::translate(mat, glm::vec3(x * tileSize, 0.0f, z * tileSize));
             mat = glm::scale(mat, glm::vec3(scale));
 

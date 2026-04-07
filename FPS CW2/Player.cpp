@@ -49,16 +49,16 @@ void Player::mouseLook(double xpos, double ypos)
 {
     if (firstMouse)
     {
-        lastX = (float)xpos;
-        lastY = (float)ypos;
+        lastX = xpos;
+        lastY = ypos;
         firstMouse = false;
     }
 
-    float xoffset = (float)xpos - lastX;
-    float yoffset = lastY - (float)ypos;
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
 
-    lastX = (float)xpos;
-    lastY = (float)ypos;
+    lastX = xpos;
+    lastY = ypos;
 
     xoffset *= sensitivity;
     yoffset *= sensitivity;
@@ -66,8 +66,10 @@ void Player::mouseLook(double xpos, double ypos)
     yaw += xoffset;
     pitch += yoffset;
 
-    if (pitch > 89.0f) pitch = 89.0f;
-    if (pitch < -89.0f) pitch = -89.0f;
+    if (pitch > maxPitch)
+        pitch = maxPitch;
+    if (pitch < -maxPitch)
+        pitch = -maxPitch;
 
     glm::vec3 direction;
     direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
